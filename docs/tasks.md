@@ -6,7 +6,7 @@
 - [x] Initialize new Expo project with TypeScript template
 - [x] Set up project folder structure
 - [x] Configure linting and code formatting
-- [ ] Add essential dependencies (navigation, UI library, image manipulation)
+- [x] Add essential dependencies (navigation, UI library, image manipulation)
 - [ ] Create initial app configuration
 
 ### OpenAI API Integration
