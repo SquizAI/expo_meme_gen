@@ -72,14 +72,32 @@ meme-generator-app/
 
 ### OpenAI API Integration
 - We will use the OpenAI gpt-image-1 model specifically for image generation
-- API calls will be optimized to minimize token usage
-- Implement caching strategies to reduce repeated API calls
-- Error handling and fallback mechanisms for API failures
+- API calls will be optimized to minimize token usage through careful prompt design
+- Implement caching strategies to reduce repeated API calls (store previously generated memes locally)
+- Comprehensive error handling with user-friendly error messages and fallback mechanisms
+- Rate limiting management to prevent quota overruns
+- Secure API key storage using environment variables
 
 ### Structured Output for Chat
-- Implement JSON schema for structured conversation flows
+- Implement JSON schema for structured conversation flows in the meme suggestion feature
 - Use the structured output API to create consistent, usable chat interactions
 - Develop conversation patterns specific to meme creation and enhancement
+- Create schemas for different meme styles, formats, and generation options
+- Design system prompts that guide the AI to deliver creative and appropriate meme suggestions
+
+### User Experience & Accessibility
+- Implement responsive design for different screen sizes
+- Ensure text readability on generated memes
+- Support accessibility through appropriate contrast ratios and text sizing
+- Provide haptic feedback for interactions where appropriate
+- Design intuitive, gesture-based image manipulation controls
+
+### Performance Optimization
+- Implement progressive image loading
+- Optimize image resizing and processing on-device before upload
+- Minimize network requests through strategic caching
+- Implement debouncing for user input to prevent excessive API calls
+- Consider background processing for image generation to keep UI responsive
 
 ### Performance Considerations
 - Implement lazy loading for templates and generated images

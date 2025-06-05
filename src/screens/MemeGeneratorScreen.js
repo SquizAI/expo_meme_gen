@@ -7,21 +7,32 @@ import React, { useState, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
   Image, 
-  ActivityIndicator,
   ScrollView,
   SafeAreaView
 } from 'react-native';
+import { 
+  Text, 
+  TextInput, 
+  Button, 
+  ActivityIndicator,
+  Card,
+  Chip,
+  Portal,
+  Dialog,
+  Paragraph, 
+} from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { generateMemeImage } from '../services/openaiService';
 
 const MemeGeneratorScreen = () => {
+  const navigation = useNavigation();
+  
   const [prompt, setPrompt] = useState('');
   const [generatedImage, setGeneratedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   // Handle meme generation
   const handleGenerate = useCallback(async () => {
@@ -46,17 +57,23 @@ const MemeGeneratorScreen = () => {
     }
   }, [prompt]);
 
+  // Navigate to editor screen with the generated image
+  const handleEdit = useCallback(() => {
+    if (generatedImage) {
+      navigation.navigate('MemeEditor', { imageUri: generatedImage });
+    }
+  }, [generatedImage, navigation]);
+
   // Handle saving the generated meme
   const handleSave = useCallback(() => {
     // Here you would implement saving to local storage or cloud
-    alert('Meme saved to your library!');
+    setDialogVisible(true);
   }, [generatedImage]);
 
-  // Handle sharing the meme
-  const handleShare = useCallback(() => {
-    // Here you would implement the sharing functionality
-    alert('Sharing functionality to be implemented');
-  }, [generatedImage]);
+  // Hide dialog
+  const hideDialog = useCallback(() => {
+    setDialogVisible(false);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,62 +85,83 @@ const MemeGeneratorScreen = () => {
           </Text>
         </View>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Describe your meme (e.g., 'A cat wearing sunglasses and riding a skateboard')"
-            value={prompt}
-            onChangeText={setPrompt}
-            multiline
-            numberOfLines={3}
-          />
-          <TouchableOpacity 
-            style={styles.generateButton}
-            onPress={handleGenerate}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.generateButtonText}>Generate Meme</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <Card style={styles.inputCard}>
+          <Card.Content>
+            <TextInput
+              label="Meme Description"
+              placeholder="e.g., 'A cat wearing sunglasses and riding a skateboard'"
+              value={prompt}
+              onChangeText={setPrompt}
+              mode="outlined"
+              multiline
+              numberOfLines={3}
+              style={styles.input}
+            />
+          </Card.Content>
+          <Card.Actions>
+            <Button 
+              mode="contained" 
+              onPress={handleGenerate}
+              disabled={loading}
+              loading={loading}
+              icon="image-plus"
+              style={styles.generateButton}
+            >
+              Generate Meme
+            </Button>
+          </Card.Actions>
+        </Card>
 
         {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
+          <Card style={styles.errorCard}>
+            <Card.Content>
+              <Text variant="bodyMedium" style={styles.errorText}>{error}</Text>
+            </Card.Content>
+          </Card>
         )}
 
         {generatedImage && (
-          <View style={styles.resultContainer}>
-            <Image
+          <Card style={styles.resultCard}>
+            <Card.Cover
               source={{ uri: generatedImage }}
               style={styles.generatedImage}
               resizeMode="contain"
             />
             
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
-                <Text style={styles.actionButtonText}>Save</Text>
-              </TouchableOpacity>
+            <Card.Actions style={styles.actionButtons}>
+              <Button mode="outlined" icon="content-save" onPress={handleSave}>
+                Save
+              </Button>
               
-              <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-                <Text style={styles.actionButtonText}>Share</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              <Button mode="contained" icon="pencil" onPress={handleEdit}>
+                Edit
+              </Button>
+            </Card.Actions>
+          </Card>
         )}
 
-        <View style={styles.tipsContainer}>
-          <Text style={styles.tipsTitle}>Tips for Great Memes:</Text>
-          <Text style={styles.tipText}>• Be specific about what you want</Text>
-          <Text style={styles.tipText}>• Include details about emotions or expressions</Text>
-          <Text style={styles.tipText}>• Mention any text you want included</Text>
-          <Text style={styles.tipText}>• Specify the style (e.g., cartoon, realistic)</Text>
-        </View>
+        <Card style={styles.tipsCard}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.tipsTitle}>Tips for Great Memes:</Text>
+            <Text variant="bodyMedium" style={styles.tipText}>• Be specific about what you want</Text>
+            <Text variant="bodyMedium" style={styles.tipText}>• Include details about emotions or expressions</Text>
+            <Text variant="bodyMedium" style={styles.tipText}>• Mention any text you want included</Text>
+            <Text variant="bodyMedium" style={styles.tipText}>• Specify the style (e.g., cartoon, realistic)</Text>
+          </Card.Content>
+        </Card>
       </ScrollView>
+      
+      <Portal>
+        <Dialog visible={dialogVisible} onDismiss={hideDialog}>
+          <Dialog.Title>Success!</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>Your meme has been saved to your library.</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hideDialog}>OK</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -149,88 +187,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  inputContainer: {
+  inputCard: {
     marginBottom: 24,
+    elevation: 2,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
     marginBottom: 16,
-    minHeight: 100,
   },
   generateButton: {
-    backgroundColor: '#4c6ef5',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
+    marginLeft: 'auto',
   },
-  generateButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  errorContainer: {
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    padding: 12,
+  errorCard: {
     marginBottom: 24,
+    backgroundColor: '#ffebee',
   },
   errorText: {
     color: '#d32f2f',
-    fontSize: 14,
   },
-  resultContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+  resultCard: {
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
   },
   generatedImage: {
-    width: '100%',
     height: 300,
-    borderRadius: 8,
     marginBottom: 16,
   },
   actionButtons: {
-    flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  actionButton: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    minWidth: 120,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  tipsContainer: {
+  tipsCard: {
+    marginBottom: 24,
     backgroundColor: '#e3f2fd',
-    borderRadius: 12,
-    padding: 16,
   },
   tipsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
     marginBottom: 12,
     color: '#1565c0',
   },
   tipText: {
-    fontSize: 14,
-    color: '#333',
     marginBottom: 8,
   },
 });
